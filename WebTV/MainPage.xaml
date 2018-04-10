@@ -58,7 +58,7 @@
 
         <Grid x:Name="mediaPanel" Grid.RowSpan="2"
               DoubleTapped="MediaPanel_DoubleTapped" Tapped="MediaPanel_Tapped"
-              PointerMoved="MediaPanel_PointerMoved" PointerExited="mediaPanel_PointerExited">
+              PointerMoved="MediaPanel_PointerMoved" PointerExited="MediaPanel_PointerExited">
             <MediaPlayerElement x:Name ="mediaPlayerElement"
                                 Source="{x:Bind vm.Source, Mode=OneWay}" AutoPlay="True"/>
             <TextBlock x:Name="failedTextBlock" Text="媒体加载失败" Visibility="Collapsed"

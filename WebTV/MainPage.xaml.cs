@@ -38,7 +38,6 @@ namespace WebTV
 
             hideCursorTimer.Interval = TimeSpan.FromSeconds(3);
             hideCursorTimer.Tick += HideCursorTimer_Tick;
-            hideCursorTimer.Start();
         }
 
         private void ToggleFullScreen()
@@ -109,7 +108,7 @@ namespace WebTV
             hideCursorTimer.Start();
         }
 
-        private void mediaPanel_PointerExited(object sender, PointerRoutedEventArgs e)
+        private void MediaPanel_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             ShowCursor();
             hideCursorTimer.Stop();
