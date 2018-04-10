@@ -5,6 +5,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Media.Core;
+using Windows.Media.Playback;
 using Windows.UI.Core;
 
 namespace WebTV.ViewModels
@@ -92,6 +94,29 @@ namespace WebTV.ViewModels
                 {
                     _url = value;
                     NotifyPropertyChanged(nameof(Url));
+                    try
+                    {
+                        Source = MediaSource.CreateFromUri(new Uri(_url));
+                    }
+                    catch
+                    {
+                        Source = null;
+                    }
+                }
+            }
+        }
+
+        private IMediaPlaybackSource _source;
+
+        public IMediaPlaybackSource Source
+        {
+            get => _source;
+            set
+            {
+                if (_source != value)
+                {
+                    _source = value;
+                    NotifyPropertyChanged(nameof(Source));
                 }
             }
         }

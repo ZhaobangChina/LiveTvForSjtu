@@ -16,9 +16,9 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <vlc:MediaElement Source="{x:Bind vm.Url, Mode=OneWay}" Grid.RowSpan="2"
-                          HardwareAcceleration="True"
-                          PointerPressed="MediaElement_PointerPressed"/>
+        <MediaPlayerElement Source="{x:Bind vm.Source, Mode=OneWay}" Grid.RowSpan="2"
+                            AutoPlay="True"
+                            PointerPressed="MediaElement_PointerPressed"/>
 
         <Grid x:Name="controlPanel" MaxWidth="500" Grid.Row="1"
               Background="{ThemeResource SystemControlChromeMediumLowAcrylicElementMediumBrush}">
