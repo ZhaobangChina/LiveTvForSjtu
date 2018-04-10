@@ -5,20 +5,70 @@
     xmlns:local="using:WebTV"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:vlc="using:VLC"
     xmlns:tookit="using:Microsoft.Toolkit.Uwp.UI.Controls"
     xmlns:services="using:WebTV.Services"
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="mediaStateVisualStateGroup">
+                <VisualState x:Name="mediaStateLoadingState">
+                    <VisualState.StateTriggers>
+                        <StateTrigger IsActive="{x:Bind vm.IsMediaLoading, Mode=OneWay}"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="loading.IsLoading" Value="True"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="mediaStateFailedState">
+                    <VisualState.StateTriggers>
+                        <StateTrigger IsActive="{x:Bind vm.IsMediaFailed, Mode=OneWay}"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="failedTextBlock.Visibility" Value="Visible"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState/>
+            </VisualStateGroup>
+            <VisualStateGroup x:Name="channelListLoadingStateGroup">
+                <VisualState x:Name="channelListLoadingGroup">
+                    <VisualState.StateTriggers>
+                        <StateTrigger IsActive="{x:Bind vm.IsChannelListLoading, Mode=OneWay}"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="channelListLoading.IsLoading" Value="True"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState/>
+            </VisualStateGroup>
+            <VisualStateGroup x:Name="controlsVisibilityStateGroup">
+                <VisualState x:Name="controlsInvisibleState">
+                    <VisualState.Setters>
+                        <Setter Target="controlPanel.Visibility" Value="Collapsed"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="controlsVisibleState"/>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="2*"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <MediaPlayerElement Source="{x:Bind vm.Source, Mode=OneWay}" Grid.RowSpan="2"
-                            AutoPlay="True"
-                            PointerPressed="MediaElement_PointerPressed"/>
+        <Grid x:Name="mediaPanel" Grid.RowSpan="2"
+              DoubleTapped="MediaPanel_DoubleTapped" Tapped="MediaPanel_Tapped">
+            <MediaPlayerElement x:Name ="mediaPlayerElement"
+                                Source="{x:Bind vm.Source, Mode=OneWay}" AutoPlay="True"
+                                PointerPressed="MediaElement_PointerPressed"/>
+            <TextBlock x:Name="failedTextBlock" Text="媒体加载失败" Visibility="Collapsed"
+                       VerticalAlignment="Center" HorizontalAlignment="Center"
+                       HorizontalTextAlignment="Center"/>
+            <tookit:Loading x:Name="loading" IsLoading="False"
+                            Background="{ThemeResource SystemControlAltMediumLowAcrylicElementMediumBrush }">
+                <ProgressRing IsActive="True" Foreground="Blue"/>
+            </tookit:Loading>
+        </Grid>
 
         <Grid x:Name="controlPanel" MaxWidth="500" Grid.Row="1"
               Background="{ThemeResource SystemControlChromeMediumLowAcrylicElementMediumBrush}">
@@ -40,6 +90,10 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+            <tookit:Loading x:Name="channelListLoading" IsLoading="False" Grid.Row="1"
+                        Background="{ThemeResource SystemControlAltMediumLowAcrylicElementMediumBrush }">
+                <ProgressRing IsActive="True" Foreground="Blue"/>
+            </tookit:Loading>
             <StackPanel Orientation="Vertical" Grid.Column="1" Grid.RowSpan="2">
                 <Button Margin="12" Click="Button_Click">
                     <SymbolIcon Symbol="FullScreen"/>
@@ -49,10 +103,5 @@
                 </Button>
             </StackPanel>
         </Grid>
-
-        <tookit:Loading IsLoading="{x:Bind vm.Loading, Mode=OneWay}" Grid.RowSpan="2"
-                        Background="{ThemeResource SystemControlAltMediumLowAcrylicElementMediumBrush }">
-            <ProgressRing IsActive="True" Foreground="Blue"/>
-        </tookit:Loading>
     </Grid>
 </Page>

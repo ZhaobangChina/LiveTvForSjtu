@@ -21,21 +21,6 @@ namespace WebTV.ViewModels
 
         private CoreDispatcher dispatcher;
 
-        private bool _loading = true;
-
-        public bool Loading
-        {
-            get => _loading;
-            private set
-            {
-                if (_loading != value)
-                {
-                    _loading = value;
-                    NotifyPropertyChanged(nameof(Loading));
-                }
-            }
-        }
-
         private ObservableCollection<Services.Channel> _channelList;
 
         public ObservableCollection<Services.Channel> ChannelList
@@ -106,18 +91,106 @@ namespace WebTV.ViewModels
             }
         }
 
-        private IMediaPlaybackSource _source;
+        private MediaSource _source;
 
-        public IMediaPlaybackSource Source
+        public MediaSource Source
         {
             get => _source;
-            set
+            private set
             {
                 if (_source != value)
                 {
+                    if (_source != null)
+                        _source.StateChanged -= Source_StateChanged;
                     _source = value;
+                    if (_source != null)
+                    {
+                        OnSourceStateChanged();
+                        _source.StateChanged += Source_StateChanged;
+                    }
                     NotifyPropertyChanged(nameof(Source));
                 }
+            }
+        }
+
+        private bool _isChannelListLoading = false;
+
+        public bool IsChannelListLoading
+        {
+            get => _isChannelListLoading;
+            private set
+            {
+                if (_isChannelListLoading != value)
+                {
+                    _isChannelListLoading = value;
+                    NotifyPropertyChanged(nameof(IsChannelListLoading));
+                }
+            }
+        }
+
+        private bool _isMediaLoading = false;
+
+        public bool IsMediaLoading
+        {
+            get => _isMediaLoading;
+            private set
+            {
+                if (_isMediaLoading != value)
+                {
+                    _isMediaLoading = value;
+                    NotifyPropertyChanged(nameof(IsMediaLoading));
+                }
+            }
+        }
+
+        private bool _isMediaFailed = false;
+
+        public bool IsMediaFailed
+        {
+            get => _isMediaFailed;
+            private set
+            {
+                if (_isMediaFailed!=value)
+                {
+                    _isMediaFailed = value;
+                    NotifyPropertyChanged(nameof(IsMediaFailed));
+                }
+            }
+        }
+
+        private void Source_StateChanged(MediaSource sender, MediaSourceStateChangedEventArgs args)
+        {
+            OnSourceStateChanged();
+        }
+
+        private void OnSourceStateChanged()
+        {
+            if (Source == null)
+            {
+                IsMediaLoading = false;
+                IsMediaFailed = true;
+                return;
+            }
+            switch (Source.State)
+            {
+                case MediaSourceState.Initial:
+                    IsMediaLoading = false;
+                    IsMediaFailed = true;
+                    break;
+                case MediaSourceState.Opening:
+                    IsMediaLoading = true;
+                    IsMediaFailed = false;
+                    break;
+                case MediaSourceState.Opened:
+                    IsMediaLoading = false;
+                    IsMediaFailed = false;
+                    break;
+                case MediaSourceState.Closed:
+                case MediaSourceState.Failed:
+                default:
+                    IsMediaLoading = false;
+                    IsMediaFailed = true;
+                    break;
             }
         }
 
@@ -138,7 +211,7 @@ namespace WebTV.ViewModels
 
         private async Task LoadChannelListAsync()
         {
-            Loading = true;
+            IsChannelListLoading = true;
             try
             {
                 var channels = await Services.ChannelManager.GetChannelsAsync();
@@ -148,7 +221,7 @@ namespace WebTV.ViewModels
             {
                 ShowError(ex);
             }
-            Loading = false;
+            IsChannelListLoading = false;
         }
 
         private void NotifyPropertyChanged(string propertyName)

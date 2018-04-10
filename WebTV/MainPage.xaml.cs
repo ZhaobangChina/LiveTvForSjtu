@@ -25,6 +25,8 @@ namespace WebTV
     {
         ViewModels.MainPageVM vm;
 
+        bool isControlsVisible = true;
+
         public MainPage()
         {
             vm = new ViewModels.MainPageVM(Dispatcher);
@@ -45,6 +47,25 @@ namespace WebTV
                 ApplicationView.GetForCurrentView().ExitFullScreenMode();
             else
                 ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
+        }
+
+        private void MediaPanel_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            if (ApplicationView.GetForCurrentView().IsFullScreenMode)
+                ApplicationView.GetForCurrentView().ExitFullScreenMode();
+            else
+                ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
+        }
+
+        private void MediaPanel_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            if (isControlsVisible)
+                VisualStateManager.GoToState(this, nameof(controlsInvisibleState), true);
+            else
+                VisualStateManager.GoToState(this, nameof(controlsVisibleState), true);
+            isControlsVisible = !isControlsVisible;
         }
     }
 }
