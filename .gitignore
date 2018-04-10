@@ -191,6 +191,7 @@ ClientBin/
 *.dbproj.schemaview
 *.jfm
 *.pfx
+!*StoreKey.pfx
 *.publishsettings
 node_modules/
 orleans.codegen.cs
