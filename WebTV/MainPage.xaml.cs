@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -27,35 +28,63 @@ namespace WebTV
 
         bool isControlsVisible = true;
 
+        DispatcherTimer hideCursorTimer = new DispatcherTimer();
+        CoreCursor previousCursor = null;
+
         public MainPage()
         {
             vm = new ViewModels.MainPageVM(Dispatcher);
             this.InitializeComponent();
+
+            hideCursorTimer.Interval = TimeSpan.FromSeconds(3);
+            hideCursorTimer.Tick += HideCursorTimer_Tick;
+            hideCursorTimer.Start();
         }
 
-        private void MediaElement_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private void ToggleFullScreen()
         {
-            if (controlPanel.Visibility == Visibility.Visible)
-                controlPanel.Visibility = Visibility.Collapsed;
+            if (ApplicationView.GetForCurrentView().IsFullScreenMode)
+            {
+                ApplicationView.GetForCurrentView().ExitFullScreenMode();
+            }
             else
-                controlPanel.Visibility = Visibility.Visible;
+            {
+                if (ApplicationView.GetForCurrentView().TryEnterFullScreenMode())
+                {
+                    HideCursor();
+                }
+            }
+        }
+
+        private void HideCursor()
+        {
+            if (Window.Current.CoreWindow.PointerCursor != null)
+            {
+                previousCursor = Window.Current.CoreWindow.PointerCursor;
+                Window.Current.CoreWindow.PointerCursor = null;
+            }
+        }
+
+        private void ShowCursor()
+        {
+            if (Window.Current.CoreWindow.PointerCursor == null)
+            {
+                if (previousCursor != null)
+                    Window.Current.CoreWindow.PointerCursor = previousCursor;
+                else
+                    Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (ApplicationView.GetForCurrentView().IsFullScreenMode)
-                ApplicationView.GetForCurrentView().ExitFullScreenMode();
-            else
-                ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
+            ToggleFullScreen();
         }
 
         private void MediaPanel_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             e.Handled = true;
-            if (ApplicationView.GetForCurrentView().IsFullScreenMode)
-                ApplicationView.GetForCurrentView().ExitFullScreenMode();
-            else
-                ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
+            ToggleFullScreen();
         }
 
         private void MediaPanel_Tapped(object sender, TappedRoutedEventArgs e)
@@ -66,6 +95,24 @@ namespace WebTV
             else
                 VisualStateManager.GoToState(this, nameof(controlsVisibleState), true);
             isControlsVisible = !isControlsVisible;
+        }
+
+        private void HideCursorTimer_Tick(object sender, object e)
+        {
+            hideCursorTimer.Stop();
+            HideCursor();
+        }
+
+        private void MediaPanel_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            ShowCursor();
+            hideCursorTimer.Start();
+        }
+
+        private void mediaPanel_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            ShowCursor();
+            hideCursorTimer.Stop();
         }
     }
 }
