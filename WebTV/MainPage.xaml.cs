@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
@@ -38,6 +41,35 @@ namespace WebTV
 
             hideCursorTimer.Interval = TimeSpan.FromSeconds(3);
             hideCursorTimer.Tick += HideCursorTimer_Tick;
+        }
+
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+
+            try
+            {
+                var file = await ApplicationData.Current.LocalFolder.GetFileAsync("MainPageVM.xml");
+                using (var stream = await file.OpenStreamForWriteAsync())
+                {
+                    var serializer = new DataContractSerializer(typeof(ViewModels.MainPageVMState));
+                    var state = (ViewModels.MainPageVMState)serializer.ReadObject(stream);
+                    vm.SetState(state);
+                }
+            }
+            catch (FileNotFoundException) { }
+            vm.InitializeIfNeeded();
+        }
+
+        public async Task SaveStateAsync()
+        {
+            var file = await ApplicationData.Current.LocalFolder.CreateFileAsync("MainPageVM.xml", CreationCollisionOption.ReplaceExisting);
+            using (var stream = await file.OpenStreamForWriteAsync())
+            {
+                var state = vm.GetState();
+                var serializer = new DataContractSerializer(state.GetType());
+                serializer.WriteObject(stream, state);
+            }
         }
 
         private void ToggleFullScreen()

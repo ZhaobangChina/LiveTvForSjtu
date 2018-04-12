@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -38,9 +39,12 @@ namespace WebTV.Services
         }
     }
 
+    [DataContract]
     class Channel
     {
+        [DataMember]
         public string Name { get; set; }
+        [DataMember]
         public string Url { get; set; }
     }
 }

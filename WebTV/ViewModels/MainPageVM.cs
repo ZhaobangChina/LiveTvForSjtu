@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Media.Core;
@@ -16,7 +17,37 @@ namespace WebTV.ViewModels
         public MainPageVM(CoreDispatcher dispatcher)
         {
             this.dispatcher = dispatcher;
-            var result = LoadChannelListAsync();
+        }
+
+        public MainPageVMState GetState()
+        {
+            var state = new MainPageVMState();
+            if (ChannelList != null)
+            {
+                state.Channels = ChannelList.ToList();
+                state.SelectedIndex = ChannelList.IndexOf(SelectedChannel);
+            }
+            return state;
+        }
+
+        public void SetState(MainPageVMState state)
+        {
+            IsChannelListLoading = true;
+            if (state.Channels != null)
+                ChannelList = new ObservableCollection<Services.Channel>(state.Channels);
+            IsChannelListLoading = false;
+
+            if (state.SelectedIndex != null)
+            {
+                try
+                {
+                    SelectedChannel = ChannelList[state.SelectedIndex.Value];
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    SelectedChannel = null;
+                }
+            }
         }
 
         private CoreDispatcher dispatcher;
@@ -165,33 +196,41 @@ namespace WebTV.ViewModels
 
         private void OnSourceStateChanged()
         {
-            if (Source == null)
+            void action()
             {
-                IsMediaLoading = false;
-                IsMediaFailed = true;
-                return;
-            }
-            switch (Source.State)
-            {
-                case MediaSourceState.Initial:
+                if (Source == null)
+                {
                     IsMediaLoading = false;
                     IsMediaFailed = true;
-                    break;
-                case MediaSourceState.Opening:
-                    IsMediaLoading = true;
-                    IsMediaFailed = false;
-                    break;
-                case MediaSourceState.Opened:
-                    IsMediaLoading = false;
-                    IsMediaFailed = false;
-                    break;
-                case MediaSourceState.Closed:
-                case MediaSourceState.Failed:
-                default:
-                    IsMediaLoading = false;
-                    IsMediaFailed = true;
-                    break;
-            }
+                    return;
+                }
+                switch (Source.State)
+                {
+                    case MediaSourceState.Initial:
+                        IsMediaLoading = false;
+                        IsMediaFailed = true;
+                        break;
+                    case MediaSourceState.Opening:
+                        IsMediaLoading = true;
+                        IsMediaFailed = false;
+                        break;
+                    case MediaSourceState.Opened:
+                        IsMediaLoading = false;
+                        IsMediaFailed = false;
+                        break;
+                    case MediaSourceState.Closed:
+                    case MediaSourceState.Failed:
+                    default:
+                        IsMediaLoading = false;
+                        IsMediaFailed = true;
+                        break;
+                }
+            };
+
+            if (dispatcher.HasThreadAccess)
+                action();
+            else
+                dispatcher.RunAsync(CoreDispatcherPriority.Normal, action).AsTask().Wait();
         }
 
         private void ShowError(Exception ex)
@@ -209,13 +248,26 @@ namespace WebTV.ViewModels
             var result = LoadChannelListAsync();
         }
 
+        public void InitializeIfNeeded()
+        {
+            if (ChannelList == null)
+            {
+                var result = LoadChannelListAsync();
+            }
+        }
+
         private async Task LoadChannelListAsync()
         {
             IsChannelListLoading = true;
+            string currentChannelName = ChannelName;
             try
             {
                 var channels = await Services.ChannelManager.GetChannelsAsync();
                 ChannelList = new ObservableCollection<Services.Channel>(channels);
+                if (currentChannelName != null)
+                {
+                    SelectedChannel = ChannelList.FirstOrDefault(channel => channel?.Name == currentChannelName);
+                }
             }
             catch (Exception ex)
             {
@@ -226,17 +278,18 @@ namespace WebTV.ViewModels
 
         private void NotifyPropertyChanged(string propertyName)
         {
-            void action()
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            }
-
-            if (dispatcher.HasThreadAccess)
-                action();
-            else
-                dispatcher.RunAsync(CoreDispatcherPriority.Normal, action).AsTask().Wait();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+    }
+
+    [DataContract]
+    struct MainPageVMState
+    {
+        [DataMember]
+        public List<Services.Channel> Channels { get; set; }
+        [DataMember]
+        public int? SelectedIndex { get; set; }
     }
 }
