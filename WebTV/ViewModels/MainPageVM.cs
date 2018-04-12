@@ -22,10 +22,10 @@ namespace WebTV.ViewModels
         public MainPageVMState GetState()
         {
             var state = new MainPageVMState();
-            if (ChannelList != null)
+            if (AllChannelList != null)
             {
-                state.Channels = ChannelList.ToList();
-                state.SelectedIndex = ChannelList.IndexOf(SelectedChannel);
+                state.Channels = AllChannelList.ToList();
+                state.SelectedIndex = AllChannelList.IndexOf(SelectedChannel);
             }
             return state;
         }
@@ -34,14 +34,14 @@ namespace WebTV.ViewModels
         {
             IsChannelListLoading = true;
             if (state.Channels != null)
-                ChannelList = new ObservableCollection<Services.Channel>(state.Channels);
+                AllChannelList = new ObservableCollection<Services.Channel>(state.Channels);
             IsChannelListLoading = false;
 
             if (state.SelectedIndex != null)
             {
                 try
                 {
-                    SelectedChannel = ChannelList[state.SelectedIndex.Value];
+                    SelectedChannel = AllChannelList[state.SelectedIndex.Value];
                 }
                 catch (ArgumentOutOfRangeException)
                 {
@@ -51,6 +51,22 @@ namespace WebTV.ViewModels
         }
 
         private CoreDispatcher dispatcher;
+
+        private ObservableCollection<Services.Channel> _allChannelList;
+
+        public ObservableCollection<Services.Channel> AllChannelList
+        {
+            get => _allChannelList;
+            set
+            {
+                if (_allChannelList != value)
+                {
+                    _allChannelList = value;
+                    NotifyPropertyChanged(nameof(AllChannelList));
+                    UpdateSearchResult();
+                }
+            }
+        }
 
         private ObservableCollection<Services.Channel> _channelList;
 
@@ -144,6 +160,22 @@ namespace WebTV.ViewModels
             }
         }
 
+        private string _searchString;
+
+        public string SearchString
+        {
+            get => _searchString;
+            set
+            {
+                if (_searchString != value)
+                {
+                    _searchString = value;
+                    NotifyPropertyChanged(nameof(SearchString));
+                    UpdateSearchResult();
+                }
+            }
+        }
+
         private bool _isChannelListLoading = false;
 
         public bool IsChannelListLoading
@@ -186,6 +218,19 @@ namespace WebTV.ViewModels
                     _isMediaFailed = value;
                     NotifyPropertyChanged(nameof(IsMediaFailed));
                 }
+            }
+        }
+
+        public void Refresh()
+        {
+            var result = LoadChannelListAsync();
+        }
+
+        public void InitializeIfNeeded()
+        {
+            if (AllChannelList == null)
+            {
+                var result = LoadChannelListAsync();
             }
         }
 
@@ -243,16 +288,15 @@ namespace WebTV.ViewModels
             var result = dialog.ShowAsync();
         }
 
-        public void Refresh()
+        private void UpdateSearchResult()
         {
-            var result = LoadChannelListAsync();
-        }
-
-        public void InitializeIfNeeded()
-        {
-            if (ChannelList == null)
+            if (string.IsNullOrWhiteSpace(SearchString))
             {
-                var result = LoadChannelListAsync();
+                ChannelList = AllChannelList;
+            }
+            else
+            {
+                ChannelList = new ObservableCollection<Services.Channel>(AllChannelList?.Where(channel => channel?.Name?.Contains(SearchString) == true));
             }
         }
 
@@ -263,10 +307,10 @@ namespace WebTV.ViewModels
             try
             {
                 var channels = await Services.ChannelManager.GetChannelsAsync();
-                ChannelList = new ObservableCollection<Services.Channel>(channels);
+                AllChannelList = new ObservableCollection<Services.Channel>(channels);
                 if (currentChannelName != null)
                 {
-                    SelectedChannel = ChannelList.FirstOrDefault(channel => channel?.Name == currentChannelName);
+                    SelectedChannel = AllChannelList.FirstOrDefault(channel => channel?.Name == currentChannelName);
                 }
             }
             catch (Exception ex)

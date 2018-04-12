@@ -105,6 +105,10 @@
                         <TextBlock Text="{x:Bind Name}"/>
                     </DataTemplate>
                 </ListView.ItemTemplate>
+                <ListView.Header>
+                    <AutoSuggestBox x:Name="searchBox"
+                             PlaceholderText="搜索" Margin="12" Text="{x:Bind vm.SearchString, Mode=TwoWay}"/>
+                </ListView.Header>
             </ListView>
             <tookit:Loading x:Name="channelListLoading" IsLoading="False" Grid.Row="1"
                         Background="{ThemeResource SystemControlAltMediumLowAcrylicElementMediumBrush }">
