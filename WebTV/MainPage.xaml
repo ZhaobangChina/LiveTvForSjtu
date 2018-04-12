@@ -9,7 +9,7 @@
     xmlns:services="using:WebTV.Services"
     mc:Ignorable="d" RequestedTheme="Dark">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <RelativePanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="mediaStateVisualStateGroup">
                 <VisualState x:Name="mediaStateLoadingState">
@@ -46,6 +46,16 @@
                     <Storyboard>
                         <FadeOutThemeAnimation TargetName="controlPanel"/>
                         <FadeOutThemeAnimation TargetName="statusPanel"/>
+                        <ObjectAnimationUsingKeyFrames
+                            BeginTime="0:0:0.5"
+                            Storyboard.TargetName="controlPanel" Storyboard.TargetProperty="Visibility">
+                            <DiscreteObjectKeyFrame Value="Collapsed"/>
+                        </ObjectAnimationUsingKeyFrames>
+                        <ObjectAnimationUsingKeyFrames
+                            BeginTime="0:0:0.5"
+                            Storyboard.TargetName="statusPanel" Storyboard.TargetProperty="Visibility">
+                            <DiscreteObjectKeyFrame Value="Collapsed"/>
+                        </ObjectAnimationUsingKeyFrames>
                     </Storyboard>
                 </VisualState>
                 <VisualState x:Name="controlsVisibleState">
@@ -57,12 +67,7 @@
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="2*"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <Grid x:Name="mediaPanel" Grid.RowSpan="2"
+        <Grid x:Name="mediaPanel"
               DoubleTapped="MediaPanel_DoubleTapped" Tapped="MediaPanel_Tapped"
               PointerMoved="MediaPanel_PointerMoved" PointerExited="MediaPanel_PointerExited">
             <MediaPlayerElement x:Name ="mediaPlayerElement"
@@ -75,13 +80,14 @@
                 <ProgressRing IsActive="True" Foreground="Blue"/>
             </tookit:Loading>
         </Grid>
-        <RelativePanel x:Name="statusPanel" VerticalAlignment="Top"
-              Background="{ThemeResource SystemControlChromeMediumLowAcrylicElementMediumBrush}">
+        <RelativePanel x:Name="statusPanel" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignRightWithPanel="True" RelativePanel.AlignTopWithPanel="True"
+                       Background="{ThemeResource SystemControlChromeMediumLowAcrylicElementMediumBrush}">
             <TextBlock x:Name="nowPlayingHint" Text="正在播放" Margin="12,12,12,0"/>
             <TextBlock x:Name="nowPlayingTextBlock" Margin="12,0,12,12" RelativePanel.Below="nowPlayingHint"
                        Text="{x:Bind vm.ChannelName, Mode=OneWay}" FontSize="24"/>
         </RelativePanel>
-        <Grid x:Name="controlPanel" MaxWidth="500" Grid.Row="1"
+        <Grid x:Name="controlPanel" Width="400"
+              RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignBottomWithPanel="True" RelativePanel.Below="statusPanel"
               Background="{ThemeResource SystemControlChromeMediumLowAcrylicElementMediumBrush}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -113,5 +119,5 @@
                 </Button>
             </StackPanel>
         </Grid>
-    </Grid>
+    </RelativePanel>
 </Page>
