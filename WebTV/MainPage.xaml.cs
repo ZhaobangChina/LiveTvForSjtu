@@ -123,7 +123,7 @@ namespace WebTV
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void FullScreenButton_Click(object sender, RoutedEventArgs e)
         {
             ToggleFullScreen();
         }

@@ -115,11 +115,23 @@
                 <ProgressRing IsActive="True" Foreground="Blue"/>
             </tookit:Loading>
             <StackPanel Orientation="Vertical" Grid.Column="1" Grid.RowSpan="2">
-                <Button Margin="12" Click="Button_Click">
+                <Button x:Name="fullScreecButton" Margin="12" AccessKey="F" Click="FullScreenButton_Click">
                     <SymbolIcon Symbol="FullScreen"/>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="全屏（F11）"/>
+                    </ToolTipService.ToolTip>
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="F11"/>
+                    </Button.KeyboardAccelerators>
                 </Button>
-                <Button Margin="12" Click="{x:Bind vm.Refresh}">
+                <Button x:Name="refreshButton" Margin="12" AccessKey="R" Click="{x:Bind vm.Refresh}">
                     <SymbolIcon Symbol="Refresh"/>
+                    <ToolTipService.ToolTip>
+                        <ToolTip Content="刷新（F5）"/>
+                    </ToolTipService.ToolTip>
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="F5"/>
+                    </Button.KeyboardAccelerators>
                 </Button>
             </StackPanel>
         </Grid>
