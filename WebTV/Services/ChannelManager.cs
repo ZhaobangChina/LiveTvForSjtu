@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Zhaobang.Xspf;
 
 namespace WebTV.Services
 {
@@ -19,6 +20,9 @@ namespace WebTV.Services
         /// <exception cref="System.Net.Http.HttpRequestException">
         /// 进行网络请求时发生错误。
         /// </exception>
+        /// <exception cref="InvalidDataException">
+        /// 数据格式有误。
+        /// </exception>
         public static async Task<IEnumerable<Channel>> GetChannelsAsync()
         {
             using (HttpClient client = new HttpClient())
@@ -28,7 +32,7 @@ namespace WebTV.Services
                 response.EnsureSuccessStatusCode();
 
                 Stream xmlStream = await response.Content.ReadAsStreamAsync();
-                Xspf xspf = Xspf.Load(xmlStream);
+                Xspf xspf = Xspf.Load(xmlStream, false);
                 return xspf.TrackList.Select(xspfTrack =>
                     new Channel
                     {
