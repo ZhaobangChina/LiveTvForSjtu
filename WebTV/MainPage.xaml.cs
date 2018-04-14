@@ -52,8 +52,24 @@ namespace WebTV
                 var file = await ApplicationData.Current.LocalFolder.GetFileAsync("MainPageVM.xml");
                 using (var stream = await file.OpenStreamForWriteAsync())
                 {
-                    var serializer = new DataContractSerializer(typeof(ViewModels.MainPageVMState));
-                    var state = (ViewModels.MainPageVMState)serializer.ReadObject(stream);
+                    ViewModels.MainPageVMState state = new ViewModels.MainPageVMState
+                    {
+                        Channels = null,
+                        SelectedIndex = null
+                    };
+                    await Task.Run(() =>
+                    {
+                        try
+                        {
+                            var serializer = new DataContractSerializer(typeof(ViewModels.MainPageVMState));
+                            state = (ViewModels.MainPageVMState)serializer.ReadObject(stream);
+                        }
+                        catch
+                        {
+                            state.Channels = null;
+                            state.SelectedIndex = null;
+                        }
+                    });
                     vm.SetState(state);
                 }
             }

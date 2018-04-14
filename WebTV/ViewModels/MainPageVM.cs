@@ -17,6 +17,7 @@ namespace WebTV.ViewModels
         public MainPageVM(CoreDispatcher dispatcher)
         {
             this.dispatcher = dispatcher;
+            IsChannelListLoading = true;
         }
 
         public MainPageVMState GetState()
@@ -41,7 +42,7 @@ namespace WebTV.ViewModels
             {
                 try
                 {
-                    SelectedChannel = AllChannelList[state.SelectedIndex.Value];
+                    SelectedChannel = AllChannelList?[state.SelectedIndex.Value];
                 }
                 catch (ArgumentOutOfRangeException)
                 {

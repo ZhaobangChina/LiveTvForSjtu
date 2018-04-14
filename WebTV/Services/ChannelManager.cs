@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Zhaobang.Xspf;
@@ -32,7 +33,8 @@ namespace WebTV.Services
                 response.EnsureSuccessStatusCode();
 
                 Stream xmlStream = await response.Content.ReadAsStreamAsync();
-                Xspf xspf = Xspf.Load(xmlStream, false);
+                XDocument xDocument = await XDocument.LoadAsync(xmlStream, LoadOptions.None, CancellationToken.None);
+                Xspf xspf = new Xspf(xDocument, false);
                 return xspf.TrackList.Select(xspfTrack =>
                     new Channel
                     {
