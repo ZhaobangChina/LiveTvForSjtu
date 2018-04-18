@@ -289,6 +289,16 @@ namespace WebTV.ViewModels
             var result = dialog.ShowAsync();
         }
 
+        private void ShowError(string message)
+        {
+            var dialog = new Windows.UI.Xaml.Controls.ContentDialog
+            {
+                Content = message,
+                CloseButtonText = "忽略"
+            };
+            var result = dialog.ShowAsync();
+        }
+
         private void UpdateSearchResult()
         {
             if (string.IsNullOrWhiteSpace(SearchString))
@@ -304,10 +314,27 @@ namespace WebTV.ViewModels
         private async Task LoadChannelListAsync()
         {
             IsChannelListLoading = true;
-            string currentChannelName = ChannelName;
             try
             {
-                var channels = await Services.ChannelManager.GetChannelsAsync();
+                string currentChannelName = ChannelName;
+                IEnumerable<Services.Channel> channels = new Services.Channel[] { };
+                try
+                {
+                    channels = await Services.ChannelManager.GetChannelsAsync();
+                }
+                catch (Exception ex1)
+                {
+                    try
+                    {
+                        channels = await Services.ChannelManager.GetChannelsFallbackAsync();
+                        ShowError(string.Format("获取频道列表失败，已从本地加载频道列表。错误信息：{0}", ex1.Message));
+                    }
+                    catch (Exception ex2)
+                    {
+                        ShowError(string.Format("获取频道列表失败：{0}\n从本地加载频道列表失败：{1}", ex1.Message, ex2.Message));
+                    }
+                }
+
                 AllChannelList = new ObservableCollection<Services.Channel>(channels);
                 if (currentChannelName != null)
                 {

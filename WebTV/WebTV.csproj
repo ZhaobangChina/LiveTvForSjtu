@@ -111,6 +111,9 @@
       <SubType>Designer</SubType>
     </AppxManifest>
     <PRIResource Include="Strings\zh-CN\Resources.resw" />
+    <Content Include="Contents\fallback.xspf">
+      <SubType>Designer</SubType>
+    </Content>
     <None Include="WebTV_StoreKey.pfx" />
     <None Include="WebTV_TemporaryKey.pfx" />
   </ItemGroup>
