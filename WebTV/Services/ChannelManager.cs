@@ -38,7 +38,9 @@ namespace WebTV.Services
                 {
                     XDocument xDocument = await XDocument.LoadAsync(xmlStream, LoadOptions.None, CancellationToken.None);
                     Xspf xspf = new Xspf(xDocument, true);
-                    return xspf.TrackList.Select(xspfTrack =>
+                    return xspf.TrackList
+                        .Where(xspfTrack => xspfTrack.Location.Scheme == "http" || xspfTrack.Location.Scheme == "https")
+                        .Select(xspfTrack =>
                         new Channel
                         {
                             Name = xspfTrack.Title,
@@ -59,7 +61,9 @@ namespace WebTV.Services
             {
                 XDocument xDocument = await XDocument.LoadAsync(xmlStream, LoadOptions.None, CancellationToken.None);
                 Xspf xspf = new Xspf(xDocument, true);
-                return xspf.TrackList.Select(xspfTrack =>
+                return xspf.TrackList
+                    .Where(xspfTrack => xspfTrack.Location.Scheme == "http" || xspfTrack.Location.Scheme == "https")
+                    .Select(xspfTrack =>
                     new Channel
                     {
                         Name = xspfTrack.Title,
